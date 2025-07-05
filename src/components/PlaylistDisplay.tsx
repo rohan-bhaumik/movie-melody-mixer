@@ -1,8 +1,10 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Music, Clock, Play, ExternalLink } from 'lucide-react';
+import { Music, Clock, Play, ExternalLink, Check } from 'lucide-react';
+import { useSpotify } from '@/hooks/useSpotify';
+import { useToast } from '@/hooks/use-toast';
+import SpotifyConnect from './SpotifyConnect';
 
 interface Song {
   title: string;
@@ -19,6 +21,36 @@ interface PlaylistDisplayProps {
 }
 
 const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ movieTitle, songs, onNewSearch }) => {
+  const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
+  const [playlistCreated, setPlaylistCreated] = useState(false);
+  const [spotifyUrl, setSpotifyUrl] = useState<string | null>(null);
+  const { isConnected, createPlaylist } = useSpotify();
+  const { toast } = useToast();
+
+  const handleCreateSpotifyPlaylist = async () => {
+    try {
+      setIsCreatingPlaylist(true);
+      const result = await createPlaylist(movieTitle, songs);
+      
+      setPlaylistCreated(true);
+      setSpotifyUrl(result.playlistUrl);
+      
+      toast({
+        title: "Playlist created!",
+        description: `Successfully created "${movieTitle} - Movie Soundtrack Vibes" with ${result.tracksAdded} of ${result.totalTracks} tracks.`,
+      });
+    } catch (error) {
+      console.error('Error creating playlist:', error);
+      toast({
+        title: "Failed to create playlist",
+        description: "There was an error creating your Spotify playlist. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingPlaylist(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
       <div className="text-center mb-8">
@@ -41,10 +73,35 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ movieTitle, songs, on
               <p className="text-sm text-muted-foreground">Generated playlist</p>
             </div>
           </div>
-          <Button className="bg-primary hover:bg-primary/90 gap-2">
-            <ExternalLink className="w-4 h-4" />
-            Open in Spotify
-          </Button>
+          
+          <div className="flex items-center gap-3">
+            {!isConnected && <SpotifyConnect />}
+            
+            {isConnected && !playlistCreated && (
+              <Button 
+                onClick={handleCreateSpotifyPlaylist}
+                disabled={isCreatingPlaylist}
+                className="bg-[#1DB954] hover:bg-[#1ed760] text-white gap-2"
+              >
+                {isCreatingPlaylist ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Music className="w-4 h-4" />
+                )}
+                {isCreatingPlaylist ? 'Creating Playlist...' : 'Create in Spotify'}
+              </Button>
+            )}
+            
+            {playlistCreated && spotifyUrl && (
+              <Button 
+                onClick={() => window.open(spotifyUrl, '_blank')}
+                className="bg-[#1DB954] hover:bg-[#1ed760] text-white gap-2"
+              >
+                <Check className="w-4 h-4" />
+                Open in Spotify
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="space-y-3">
