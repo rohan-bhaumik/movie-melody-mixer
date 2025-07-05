@@ -1,6 +1,4 @@
-
-import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 interface SpotifyTokens {
@@ -19,10 +17,13 @@ export const useSpotify = () => {
     try {
       setIsLoading(true);
       
-      // Get auth URL from edge function
-      const { data, error } = await supabase.functions.invoke('spotify-auth');
+      // Get auth URL from Next.js API route
+      const response = await fetch('/api/spotify/auth');
+      const data = await response.json();
       
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to get auth URL');
+      }
       
       const { authUrl } = data;
       
@@ -35,14 +36,16 @@ export const useSpotify = () => {
 
       // Listen for the auth response
       const handleMessage = (event: MessageEvent) => {
-        if (event.origin !== window.location.origin && !event.origin.includes('supabase.co')) {
+        if (event.origin !== window.location.origin) {
           return;
         }
 
         if (event.data.access_token) {
           setTokens(event.data);
           setIsConnected(true);
-          localStorage.setItem('spotify_tokens', JSON.stringify(event.data));
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('spotify_tokens', JSON.stringify(event.data));
+          }
           toast({
             title: "Connected to Spotify!",
             description: "You can now create playlists in your Spotify account.",
@@ -88,15 +91,23 @@ export const useSpotify = () => {
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('spotify-create-playlist', {
-        body: {
+      const response = await fetch('/api/spotify/create-playlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           accessToken: tokens.access_token,
           movieTitle,
           songs,
-        },
+        }),
       });
 
-      if (error) throw error;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create playlist');
+      }
 
       return data;
     } catch (error) {
@@ -106,19 +117,59 @@ export const useSpotify = () => {
   }, [tokens]);
 
   // Check for stored tokens on mount
-  useState(() => {
-    const storedTokens = localStorage.getItem('spotify_tokens');
-    if (storedTokens) {
-      try {
-        const parsedTokens = JSON.parse(storedTokens);
-        setTokens(parsedTokens);
-        setIsConnected(true);
-      } catch (error) {
-        console.error('Error parsing stored tokens:', error);
-        localStorage.removeItem('spotify_tokens');
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedTokens = localStorage.getItem('spotify_tokens');
+      if (storedTokens) {
+        try {
+          const parsedTokens = JSON.parse(storedTokens);
+          setTokens(parsedTokens);
+          setIsConnected(true);
+        } catch (error) {
+          console.error('Error parsing stored tokens:', error);
+          localStorage.removeItem('spotify_tokens');
+        }
       }
     }
-  });
+  }, []);
+
+  // Check for tokens in URL params (from OAuth callback)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokensParam = urlParams.get('tokens');
+      const errorParam = urlParams.get('error');
+
+      if (tokensParam) {
+        try {
+          const parsedTokens = JSON.parse(decodeURIComponent(tokensParam));
+          setTokens(parsedTokens);
+          setIsConnected(true);
+          localStorage.setItem('spotify_tokens', JSON.stringify(parsedTokens));
+          toast({
+            title: "Connected to Spotify!",
+            description: "You can now create playlists in your Spotify account.",
+          });
+          
+          // Clean up URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (error) {
+          console.error('Error parsing tokens from URL:', error);
+        }
+      }
+
+      if (errorParam) {
+        toast({
+          title: "Connection failed",
+          description: decodeURIComponent(errorParam),
+          variant: "destructive",
+        });
+        
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, [toast]);
 
   return {
     isConnected,
