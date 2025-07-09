@@ -33,28 +33,11 @@ echo "✅ Using package manager: $PACKAGE_MANAGER"
 echo "📦 Installing dependencies..."
 $PACKAGE_MANAGER install
 
-# Create .env.local if it doesn't exist
-if [ ! -f .env.local ]; then
-    echo "📝 Creating .env.local file..."
-    cat > .env.local << EOF
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# Spotify Configuration
-SPOTIFY_CLIENT_ID=your_spotify_client_id
-SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
-
-# Next.js Configuration
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your_nextauth_secret
-EOF
-    echo "⚠️  Please update .env.local with your actual API keys"
-fi
-
 echo "🎉 Setup complete!"
 echo ""
 echo "Next steps:"
-echo "1. Update .env.local with your API keys"
-echo "2. Run: $PACKAGE_MANAGER run dev"
-echo "3. Open http://localhost:3000 in your browser" 
+echo "1. Run: $PACKAGE_MANAGER run dev"
+echo "2. Open http://localhost:3000 in your browser"
+echo ""
+echo "Note: This app uses mock data for YouTube video recommendations."
+echo "No API keys or external services are required." 

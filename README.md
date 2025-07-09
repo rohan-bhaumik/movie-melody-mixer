@@ -1,25 +1,23 @@
 # Movie Melody Mixer
 
-A Next.js application that generates playlists based on your favorite movies.
+A Next.js application that generates YouTube video recommendations based on your favorite movies.
 
 ## Features
 
-- Generate playlists inspired by movie themes and moods
+- Generate YouTube video recommendations inspired by movie themes and moods
 - Beautiful, modern UI with Tailwind CSS and shadcn/ui components
 - Responsive design for all devices
-- Integration with Supabase for backend services
-- Spotify integration for playlist creation
+- Embedded YouTube videos with share functionality
+- Client-side only - no backend required
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 with App Router
+- **Framework**: Next.js 15 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **UI Components**: shadcn/ui
-- **State Management**: React Query (TanStack Query)
-- **Backend**: Supabase
-- **Authentication**: Supabase Auth
-- **Music Integration**: Spotify API
+- **State Management**: React Hooks
+- **Video Integration**: YouTube Embed API
 
 ## Prerequisites
 
@@ -53,16 +51,7 @@ Before running this application, you need to have the following installed:
    bun install
    ```
 
-4. **Set up environment variables**:
-   Create a `.env.local` file in the root directory with the following variables:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   SPOTIFY_CLIENT_ID=your_spotify_client_id
-   SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
-   ```
-
-5. **Run the development server**:
+4. **Run the development server**:
    ```bash
    npm run dev
    # or
@@ -71,7 +60,7 @@ Before running this application, you need to have the following installed:
    bun dev
    ```
 
-6. **Open your browser** and navigate to [http://localhost:3000](http://localhost:3000)
+5. **Open your browser** and navigate to [http://localhost:3000](http://localhost:3000)
 
 ## Project Structure
 
@@ -86,12 +75,10 @@ movie-melody-mixer/
 │   ├── components/         # React components
 │   │   ├── ui/            # shadcn/ui components
 │   │   ├── MovieInput.tsx
-│   │   ├── PlaylistDisplay.tsx
+│   │   ├── VideoDisplay.tsx
 │   │   └── LoadingSpinner.tsx
 │   ├── hooks/             # Custom React hooks
-│   ├── lib/               # Utility functions
-│   └── integrations/      # External service integrations
-├── supabase/              # Supabase configuration
+│   └── lib/               # Utility functions
 ├── public/                # Static assets
 └── package.json
 ```
