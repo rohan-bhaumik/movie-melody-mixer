@@ -1,43 +1,57 @@
 #!/bin/bash
 
-echo "🎬 Movie Melody Mixer - Next.js Setup"
-echo "======================================"
+echo "🎬 Setting up Movie Melody Mixer (Astro Version)"
 
 # Check if Node.js is installed
 if ! command -v node &> /dev/null; then
-    echo "❌ Node.js is not installed."
-    echo "Please install Node.js from https://nodejs.org/ (version 18 or higher)"
-    echo "Or use a version manager like nvm:"
-    echo "  nvm install 18"
-    echo "  nvm use 18"
+    echo "❌ Node.js is not installed. Please install Node.js 18+ first."
     exit 1
 fi
 
-echo "✅ Node.js version: $(node --version)"
-
-# Check for package managers
-if command -v npm &> /dev/null; then
-    PACKAGE_MANAGER="npm"
-elif command -v yarn &> /dev/null; then
-    PACKAGE_MANAGER="yarn"
-elif command -v bun &> /dev/null; then
-    PACKAGE_MANAGER="bun"
-else
-    echo "❌ No package manager found. Please install npm, yarn, or bun."
+# Check Node.js version
+NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+if [ "$NODE_VERSION" -lt 18 ]; then
+    echo "❌ Node.js version 18+ is required. Current version: $(node -v)"
     exit 1
 fi
 
-echo "✅ Using package manager: $PACKAGE_MANAGER"
+echo "✅ Node.js version: $(node -v)"
+
+# Check if npm is installed
+if ! command -v npm &> /dev/null; then
+    echo "❌ npm is not installed. Please install npm first."
+    exit 1
+fi
+
+echo "✅ npm version: $(npm -v)"
 
 # Install dependencies
 echo "📦 Installing dependencies..."
-$PACKAGE_MANAGER install
+npm install
 
-echo "🎉 Setup complete!"
+if [ $? -eq 0 ]; then
+    echo "✅ Dependencies installed successfully!"
+else
+    echo "❌ Failed to install dependencies"
+    exit 1
+fi
+
+# Create .env.local if it doesn't exist
+if [ ! -f .env.local ]; then
+    echo "📝 Creating .env.local file..."
+    cat > .env.local << EOF
+# Environment variables for Movie Melody Mixer
+# Add any API keys or configuration here if needed
+EOF
+    echo "✅ .env.local created"
+fi
+
 echo ""
-echo "Next steps:"
-echo "1. Run: $PACKAGE_MANAGER run dev"
-echo "2. Open http://localhost:3000 in your browser"
+echo "🎉 Setup complete! You can now run the following commands:"
 echo ""
-echo "Note: This app uses mock data for YouTube video recommendations."
-echo "No API keys or external services are required." 
+echo "  npm run dev     - Start the development server"
+echo "  npm run build   - Build for production"
+echo "  npm run preview - Preview the production build"
+echo ""
+echo "🚀 To start developing, run: npm run dev"
+echo "🌐 The app will be available at: http://localhost:4321" 

@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from './ui/card';
+import { Button } from './ui/button';
 import { Play, Share2, ExternalLink, Youtube } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 
 interface YouTubeVideo {
   id: string;
@@ -14,15 +13,24 @@ interface YouTubeVideo {
   embedUrl: string;
 }
 
-interface VideoDisplayProps {
-  movieTitle: string;
-  videos: YouTubeVideo[];
-  onNewSearch: () => void;
-}
-
-const VideoDisplay: React.FC<VideoDisplayProps> = ({ movieTitle, videos, onNewSearch }) => {
+const VideoDisplay: React.FC = () => {
   const [selectedVideo, setSelectedVideo] = useState<YouTubeVideo | null>(null);
-  const { toast } = useToast();
+  const [movieTitle, setMovieTitle] = useState('');
+  const [videos, setVideos] = useState<YouTubeVideo[]>([]);
+  const [showVideos, setShowVideos] = useState(false);
+
+  useEffect(() => {
+    const handleStateChange = (event: CustomEvent) => {
+      setMovieTitle(event.detail.currentMovie);
+      setVideos(event.detail.videos);
+      setShowVideos(event.detail.showVideos);
+    };
+
+    window.addEventListener('appStateChanged', handleStateChange as EventListener);
+    return () => {
+      window.removeEventListener('appStateChanged', handleStateChange as EventListener);
+    };
+  }, []);
 
   const handleShare = async () => {
     const shareUrl = window.location.href;
@@ -41,17 +49,11 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ movieTitle, videos, onNewSe
       // Fallback: copy to clipboard
       try {
         await navigator.clipboard.writeText(shareUrl);
-        toast({
-          title: "Link copied!",
-          description: "The page URL has been copied to your clipboard.",
-        });
+        // Simple toast notification
+        alert('Link copied to clipboard!');
       } catch (error) {
         console.error('Failed to copy:', error);
-        toast({
-          title: "Share failed",
-          description: "Please copy the URL manually from your browser.",
-          variant: "destructive",
-        });
+        alert('Please copy the URL manually from your browser.');
       }
     }
   };
@@ -59,6 +61,14 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ movieTitle, videos, onNewSe
   const openInYouTube = (videoId: string) => {
     window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
   };
+
+  const handleNewSearch = () => {
+    (window as any).handleNewSearch();
+  };
+
+  if (!showVideos || videos.length === 0) {
+    return null;
+  }
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6">
@@ -185,7 +195,7 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ movieTitle, videos, onNewSe
 
       <div className="text-center">
         <Button
-          onClick={onNewSearch}
+          onClick={handleNewSearch}
           variant="outline"
           className="border-primary/30 hover:border-primary hover:bg-primary/10"
         >

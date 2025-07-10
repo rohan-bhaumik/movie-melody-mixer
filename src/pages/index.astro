@@ -1,0 +1,357 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MovieInput from '../components/MovieInput';
+import VideoDisplay from '../components/VideoDisplay';
+import LoadingSpinner from '../components/LoadingSpinner';
+---
+
+<Layout title="Movie Melody Mixer">
+  <div class="min-h-screen px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+      <div id="app">
+        <MovieInput client:load />
+        <VideoDisplay client:load />
+      </div>
+    </div>
+    
+    <!-- Background decoration -->
+    <div class="fixed inset-0 -z-10 overflow-hidden">
+      <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse"></div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Client-side script to handle the app state
+  let isLoading = false;
+  let currentMovie = '';
+  let videos = [];
+  let showVideos = false;
+
+  // Mock data generator
+  const generateMockVideos = (movieTitle) => {
+    const movieVideos = {
+      'pulp fiction': [
+        { 
+          id: 'dQw4w9WgXcQ',
+          title: 'Pulp Fiction Style - Retro Vibes Mix',
+          channelTitle: 'Retro Vibes',
+          duration: '3:45',
+          thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
+          reason: 'Captures the cool, edgy atmosphere of Pulp Fiction',
+          embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+        },
+        { 
+          id: '9bZkp7q19f0',
+          title: '70s Soul Classics - Movie Soundtrack Vibes',
+          channelTitle: 'Soul Classics',
+          duration: '4:12',
+          thumbnail: 'https://img.youtube.com/vi/9bZkp7q19f0/mqdefault.jpg',
+          reason: 'Perfectly matches the retro soul soundtrack feel',
+          embedUrl: 'https://www.youtube.com/embed/9bZkp7q19f0'
+        },
+        { 
+          id: 'y6120QOlsfU',
+          title: 'Funky Groove Collection - Dance Scene Energy',
+          channelTitle: 'Funky Beats',
+          duration: '5:23',
+          thumbnail: 'https://img.youtube.com/vi/y6120QOlsfU/mqdefault.jpg',
+          reason: 'High energy funk that matches the dance scene vibe',
+          embedUrl: 'https://www.youtube.com/embed/y6120QOlsfU'
+        },
+        { 
+          id: 'kJQP7kiw5Fk',
+          title: 'Chill Vibes - Coffee Shop Atmosphere',
+          channelTitle: 'Chill Music',
+          duration: '6:18',
+          thumbnail: 'https://img.youtube.com/vi/kJQP7kiw5Fk/mqdefault.jpg',
+          reason: 'Relaxed atmosphere perfect for the diner scenes',
+          embedUrl: 'https://www.youtube.com/embed/kJQP7kiw5Fk'
+        },
+        { 
+          id: 'ZZ5LpwO-An4',
+          title: 'Tension Building - Suspenseful Moments',
+          channelTitle: 'Cinematic Sounds',
+          duration: '4:55',
+          thumbnail: 'https://img.youtube.com/vi/ZZ5LpwO-An4/mqdefault.jpg',
+          reason: 'Builds tension like the movie\'s most intense scenes',
+          embedUrl: 'https://www.youtube.com/embed/ZZ5LpwO-An4'
+        }
+      ],
+      'blade runner': [
+        { 
+          id: 'hFZFjoX2cGg',
+          title: 'Cyberpunk Synthwave - Neon Nights',
+          channelTitle: 'Synthwave Vibes',
+          duration: '8:53',
+          thumbnail: 'https://img.youtube.com/vi/hFZFjoX2cGg/mqdefault.jpg',
+          reason: 'Haunting synths for cyberpunk atmosphere',
+          embedUrl: 'https://www.youtube.com/embed/hFZFjoX2cGg'
+        },
+        { 
+          id: 'm3zvVGJrTP8',
+          title: 'Dark Electronic - Future Noir',
+          channelTitle: 'Electronic Dreams',
+          duration: '4:18',
+          thumbnail: 'https://img.youtube.com/vi/m3zvVGJrTP8/mqdefault.jpg',
+          reason: 'Neon-soaked electronic vibes of the future',
+          embedUrl: 'https://www.youtube.com/embed/m3zvVGJrTP8'
+        },
+        { 
+          id: 'QK8mJJJvaes',
+          title: 'Dystopian Soundscape - Rainy Nights',
+          channelTitle: 'Ambient Worlds',
+          duration: '4:23',
+          thumbnail: 'https://img.youtube.com/vi/QK8mJJJvaes/mqdefault.jpg',
+          reason: 'Dark synthwave for dystopian city nights',
+          embedUrl: 'https://www.youtube.com/embed/QK8mJJJvaes'
+        },
+        { 
+          id: 'L_jWHffIx5E',
+          title: 'Sci-Fi Ambience - Space and Time',
+          channelTitle: 'Sci-Fi Sounds',
+          duration: '4:45',
+          thumbnail: 'https://img.youtube.com/vi/L_jWHffIx5E/mqdefault.jpg',
+          reason: 'Captures the android questioning humanity theme',
+          embedUrl: 'https://www.youtube.com/embed/L_jWHffIx5E'
+        },
+        { 
+          id: 'fJ9rUzIMcZQ',
+          title: 'Future Melancholy - Electronic Soul',
+          channelTitle: 'Future Music',
+          duration: '7:30',
+          thumbnail: 'https://img.youtube.com/vi/fJ9rUzIMcZQ/mqdefault.jpg',
+          reason: 'Electronic melancholy of the future world',
+          embedUrl: 'https://www.youtube.com/embed/fJ9rUzIMcZQ'
+        }
+      ],
+      'the dark knight': [
+        { 
+          id: 'EXeTwQWrcwY',
+          title: 'Epic Orchestral - Hero\'s Journey',
+          channelTitle: 'Epic Music',
+          duration: '9:14',
+          thumbnail: 'https://img.youtube.com/vi/EXeTwQWrcwY/mqdefault.jpg',
+          reason: 'The Joker\'s chaotic theme music',
+          embedUrl: 'https://www.youtube.com/embed/EXeTwQWrcwY'
+        },
+        { 
+          id: 'kXYiU_JCYtU',
+          title: 'Dark Rock Anthems - Inner Conflict',
+          channelTitle: 'Rock Classics',
+          duration: '3:36',
+          thumbnail: 'https://img.youtube.com/vi/kXYiU_JCYtU/mqdefault.jpg',
+          reason: 'Inner conflict and darkness themes',
+          embedUrl: 'https://www.youtube.com/embed/kXYiU_JCYtU'
+        },
+        { 
+          id: 'pRpeEdMmmQ0',
+          title: 'Heavy Rhythms - Action Sequences',
+          channelTitle: 'Action Beats',
+          duration: '3:51',
+          thumbnail: 'https://img.youtube.com/vi/pRpeEdMmmQ0/mqdefault.jpg',
+          reason: 'Heavy, driving rhythm for action sequences',
+          embedUrl: 'https://www.youtube.com/embed/pRpeEdMmmQ0'
+        },
+        { 
+          id: 'y6120QOlsfU',
+          title: 'Gothic Atmosphere - Dark Heroism',
+          channelTitle: 'Gothic Vibes',
+          duration: '3:38',
+          thumbnail: 'https://img.youtube.com/vi/y6120QOlsfU/mqdefault.jpg',
+          reason: 'Batman\'s pain and sacrifice themes',
+          embedUrl: 'https://www.youtube.com/embed/y6120QOlsfU'
+        },
+        { 
+          id: 'kJQP7kiw5Fk',
+          title: 'Dark Heroism - Gothic Rock',
+          channelTitle: 'Gothic Rock',
+          duration: '5:11',
+          thumbnail: 'https://img.youtube.com/vi/kJQP7kiw5Fk/mqdefault.jpg',
+          reason: 'Dark heroism and gothic atmosphere',
+          embedUrl: 'https://www.youtube.com/embed/kJQP7kiw5Fk'
+        }
+      ],
+      'inception': [
+        { 
+          id: 'YoHD9XEInc0',
+          title: 'Dreamlike Ambience - Mind-Bending Sounds',
+          channelTitle: 'Dream Music',
+          duration: '5:23',
+          thumbnail: 'https://img.youtube.com/vi/YoHD9XEInc0/mqdefault.jpg',
+          reason: 'Captures the surreal, dreamlike quality of Inception',
+          embedUrl: 'https://www.youtube.com/embed/YoHD9XEInc0'
+        },
+        { 
+          id: 'dQw4w9WgXcQ',
+          title: 'Epic Cinematic - Time and Reality',
+          channelTitle: 'Cinematic Dreams',
+          duration: '4:18',
+          thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
+          reason: 'Reflects the complex layers of reality in the film',
+          embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+        },
+        { 
+          id: '9bZkp7q19f0',
+          title: 'Orchestral Masterpiece - Dream Within a Dream',
+          channelTitle: 'Orchestral Vibes',
+          duration: '6:45',
+          thumbnail: 'https://img.youtube.com/vi/9bZkp7q19f0/mqdefault.jpg',
+          reason: 'Builds tension like the dream layers collapsing',
+          embedUrl: 'https://www.youtube.com/embed/9bZkp7q19f0'
+        },
+        { 
+          id: 'ZZ5LpwO-An4',
+          title: 'Mind-Bending Electronic - Reality Shifts',
+          channelTitle: 'Electronic Reality',
+          duration: '4:32',
+          thumbnail: 'https://img.youtube.com/vi/ZZ5LpwO-An4/mqdefault.jpg',
+          reason: 'Electronic sounds that mirror the shifting realities',
+          embedUrl: 'https://www.youtube.com/embed/ZZ5LpwO-An4'
+        },
+        { 
+          id: 'L_jWHffIx5E',
+          title: 'Suspenseful Journey - The Kick',
+          channelTitle: 'Suspense Music',
+          duration: '5:07',
+          thumbnail: 'https://img.youtube.com/vi/L_jWHffIx5E/mqdefault.jpg',
+          reason: 'Perfect for the high-stakes dream sequences',
+          embedUrl: 'https://www.youtube.com/embed/L_jWHffIx5E'
+        }
+      ],
+      'interstellar': [
+        { 
+          id: 'm3zvVGJrTP8',
+          title: 'Cosmic Ambience - Space Odyssey',
+          channelTitle: 'Cosmic Sounds',
+          duration: '7:15',
+          thumbnail: 'https://img.youtube.com/vi/m3zvVGJrTP8/mqdefault.jpg',
+          reason: 'Vast, cosmic sounds that match the space journey',
+          embedUrl: 'https://www.youtube.com/embed/m3zvVGJrTP8'
+        },
+        { 
+          id: 'QK8mJJJvaes',
+          title: 'Time Dilation - Relativity in Music',
+          channelTitle: 'Time Music',
+          duration: '6:28',
+          thumbnail: 'https://img.youtube.com/vi/QK8mJJJvaes/mqdefault.jpg',
+          reason: 'Reflects the time-bending nature of the story',
+          embedUrl: 'https://www.youtube.com/embed/QK8mJJJvaes'
+        },
+        { 
+          id: 'fJ9rUzIMcZQ',
+          title: 'Emotional Journey - Love Transcends Time',
+          channelTitle: 'Emotional Space',
+          duration: '5:42',
+          thumbnail: 'https://img.youtube.com/vi/fJ9rUzIMcZQ/mqdefault.jpg',
+          reason: 'Captures the emotional core of the father-daughter relationship',
+          embedUrl: 'https://www.youtube.com/embed/fJ9rUzIMcZQ'
+        },
+        { 
+          id: 'EXeTwQWrcwY',
+          title: 'Gravity - The Tesseract',
+          channelTitle: 'Gravity Music',
+          duration: '4:55',
+          thumbnail: 'https://img.youtube.com/vi/EXeTwQWrcwY/mqdefault.jpg',
+          reason: 'Mysterious sounds for the interdimensional tesseract',
+          embedUrl: 'https://www.youtube.com/embed/EXeTwQWrcwY'
+        },
+        { 
+          id: 'kXYiU_JCYtU',
+          title: 'Hope and Survival - The Mission',
+          channelTitle: 'Hope Music',
+          duration: '6:18',
+          thumbnail: 'https://img.youtube.com/vi/kXYiU_JCYtU/mqdefault.jpg',
+          reason: 'Uplifting themes for humanity\'s survival mission',
+          embedUrl: 'https://www.youtube.com/embed/kXYiU_JCYtU'
+        }
+      ]
+    };
+
+    const defaultVideos = [
+      { 
+        id: 'pRpeEdMmmQ0',
+        title: 'Cinematic Vibes - Movie Soundtrack Collection',
+        channelTitle: 'Cinematic Music',
+        duration: '3:28',
+        thumbnail: 'https://img.youtube.com/vi/pRpeEdMmmQ0/mqdefault.jpg',
+        reason: 'Perfect movie-inspired vibes',
+        embedUrl: 'https://www.youtube.com/embed/pRpeEdMmmQ0'
+      },
+      { 
+        id: 'YoHD9XEInc0',
+        title: 'Epic Orchestral - Life Soundtrack',
+        channelTitle: 'Epic Orchestral',
+        duration: '3:51',
+        thumbnail: 'https://img.youtube.com/vi/YoHD9XEInc0/mqdefault.jpg',
+        reason: 'Life feels like a movie soundtrack',
+        embedUrl: 'https://www.youtube.com/embed/YoHD9XEInc0'
+      },
+      { 
+        id: 'hFZFjoX2cGg',
+        title: 'Dramatic Depth - Emotional Journey',
+        channelTitle: 'Emotional Music',
+        duration: '4:07',
+        thumbnail: 'https://img.youtube.com/vi/hFZFjoX2cGg/mqdefault.jpg',
+        reason: 'Dramatic and emotional depth',
+        embedUrl: 'https://www.youtube.com/embed/hFZFjoX2cGg'
+      },
+      { 
+        id: 'm3zvVGJrTP8',
+        title: 'Epic Cinematic - Orchestral Masterpiece',
+        channelTitle: 'Cinematic Orchestra',
+        duration: '4:35',
+        thumbnail: 'https://img.youtube.com/vi/m3zvVGJrTP8/mqdefault.jpg',
+        reason: 'Epic cinematic orchestration',
+        embedUrl: 'https://www.youtube.com/embed/m3zvVGJrTP8'
+      },
+      { 
+        id: 'QK8mJJJvaes',
+        title: 'Heroic Themes - Character Development',
+        channelTitle: 'Heroic Music',
+        duration: '6:07',
+        thumbnail: 'https://img.youtube.com/vi/QK8mJJJvaes/mqdefault.jpg',
+        reason: 'Heroic themes and character development',
+        embedUrl: 'https://www.youtube.com/embed/QK8mJJJvaes'
+      }
+    ];
+
+    return movieVideos[movieTitle.toLowerCase()] || defaultVideos;
+  };
+
+  // Make functions available globally for React components
+  window.handleMovieSubmit = async (movie) => {
+    isLoading = true;
+    currentMovie = movie;
+    
+    // Simulate API call delay
+    setTimeout(() => {
+      videos = generateMockVideos(movie);
+      isLoading = false;
+      showVideos = true;
+      
+      // Trigger re-render
+      const event = new CustomEvent('appStateChanged', {
+        detail: { isLoading, currentMovie, videos, showVideos }
+      });
+      window.dispatchEvent(event);
+    }, 2000);
+  };
+
+  window.handleNewSearch = () => {
+    showVideos = false;
+    currentMovie = '';
+    videos = [];
+    isLoading = false;
+    
+    // Trigger re-render
+    const event = new CustomEvent('appStateChanged', {
+      detail: { isLoading, currentMovie, videos, showVideos }
+    });
+    window.dispatchEvent(event);
+  };
+
+  // Initial state
+  window.appState = { isLoading, currentMovie, videos, showVideos };
+</script> 

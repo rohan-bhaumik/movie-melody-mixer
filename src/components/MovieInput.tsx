@@ -1,20 +1,28 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import React, { useState, useEffect } from 'react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { Film, Youtube } from 'lucide-react';
 
-interface MovieInputProps {
-  onMovieSubmit: (movie: string) => void;
-  isLoading: boolean;
-}
-
-const MovieInput: React.FC<MovieInputProps> = ({ onMovieSubmit, isLoading }) => {
+const MovieInput: React.FC = () => {
   const [movieTitle, setMovieTitle] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const handleStateChange = (event: CustomEvent) => {
+      setIsLoading(event.detail.isLoading);
+    };
+
+    window.addEventListener('appStateChanged', handleStateChange as EventListener);
+    return () => {
+      window.removeEventListener('appStateChanged', handleStateChange as EventListener);
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (movieTitle.trim()) {
-      onMovieSubmit(movieTitle.trim());
+      // Call the global function
+      (window as any).handleMovieSubmit(movieTitle.trim());
     }
   };
 
