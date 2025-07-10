@@ -113,93 +113,75 @@ const VideoDisplay: React.FC = () => {
       )}
 
       {/* Video Grid */}
-      <div className="glass-effect rounded-xl p-6 glow-effect">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center">
-              <Youtube className="w-6 h-6 text-white" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {videos.map((video) => (
+          <Card key={video.id} className="group hover:shadow-lg transition-all duration-300 glass-effect glow-effect">
+            <div className="relative">
+              <img
+                src={video.thumbnail}
+                alt={video.title}
+                className="w-full h-48 object-cover rounded-t-lg"
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-t-lg flex items-center justify-center">
+                <Button
+                  size="lg"
+                  onClick={() => setSelectedVideo(video)}
+                  className="bg-primary/90 hover:bg-primary text-white"
+                >
+                  <Play className="w-6 h-6 mr-2" />
+                  Play
+                </Button>
+              </div>
+              <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                {video.duration}
+              </div>
             </div>
-            <div>
-              <h3 className="text-xl font-semibold">{movieTitle} Video Vibes</h3>
-              <p className="text-sm text-muted-foreground">Curated YouTube videos</p>
-            </div>
-          </div>
-          
-          <Button 
-            onClick={handleShare}
-            variant="outline"
-            className="border-primary/30 hover:border-primary hover:bg-primary/10 gap-2"
-          >
-            <Share2 className="w-4 h-4" />
-            Share
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {videos.map((video, index) => (
-            <Card 
-              key={index} 
-              className="bg-secondary/30 border-primary/20 hover:bg-secondary/50 transition-all duration-200 hover:scale-[1.02] cursor-pointer"
-              onClick={() => setSelectedVideo(video)}
-            >
-              <CardContent className="p-0">
-                <div className="relative">
-                  <img 
-                    src={video.thumbnail} 
-                    alt={video.title}
-                    className="w-full h-32 object-cover rounded-t-lg"
-                  />
-                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                    <Play className="w-8 h-8 text-white" />
-                  </div>
-                  <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
-                    {video.duration}
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h4 className="font-semibold text-sm line-clamp-2 mb-1">{video.title}</h4>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    {video.channelTitle}
-                  </p>
-                  <p className="text-xs text-accent italic line-clamp-2">"{video.reason}"</p>
-                  <div className="flex items-center gap-2 mt-3">
-                    <Button
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedVideo(video);
-                      }}
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white gap-2"
-                    >
-                      <Play className="w-3 h-3" />
-                      Play
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openInYouTube(video.id);
-                      }}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <ExternalLink className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-lg mb-2 line-clamp-2">{video.title}</h3>
+              <p className="text-sm text-muted-foreground mb-2">{video.channelTitle}</p>
+              <p className="text-sm text-accent mb-4 italic line-clamp-2">"{video.reason}"</p>
+              
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedVideo(video)}
+                  className="flex-1"
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  Watch
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openInYouTube(video.id)}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <div className="text-center">
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+        <Button
+          onClick={handleShare}
+          variant="outline"
+          size="lg"
+          className="flex items-center gap-2"
+        >
+          <Share2 className="w-5 h-5" />
+          Share Collection
+        </Button>
         <Button
           onClick={handleNewSearch}
-          variant="outline"
-          className="border-primary/30 hover:border-primary hover:bg-primary/10"
+          size="lg"
+          className="flex items-center gap-2 bg-gradient-to-r from-accent to-red-500 hover:from-accent/90 hover:to-red-500/90 text-white border-0"
         >
-          Find Videos for Another Movie
+          <Youtube className="w-5 h-5" />
+          Create New Collection
         </Button>
       </div>
     </div>

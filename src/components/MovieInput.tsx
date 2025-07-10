@@ -60,15 +60,18 @@ const MovieInput: React.FC = () => {
         <Button
           type="submit"
           disabled={!movieTitle.trim() || isLoading}
-          className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-red-500 hover:from-primary/90 hover:to-red-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-accent to-red-500 hover:from-accent/90 hover:to-red-500/90 text-white border-0 glow-effect"
         >
           {isLoading ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Finding Videos...
+              Generating Video Collection...
             </div>
           ) : (
-            'Find Videos'
+            <div className="flex items-center gap-3">
+              <Youtube className="w-6 h-6" />
+              Create Video Collection
+            </div>
           )}
         </Button>
       </form>

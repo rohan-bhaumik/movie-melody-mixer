@@ -2,43 +2,40 @@ import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
 import react from '@astrojs/react';
 import cloudflare from '@astrojs/cloudflare';
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Configuration for Webflow Cloud deployment on Cloudflare Edge runtime
+// Configuration for Webflow Cloud deployment - using static output for edge compatibility
 export default defineConfig({
   base: '/mixer',
   integrations: [
     tailwind(),
-    react()
+    react({
+      // Enable client-side rendering for better edge compatibility
+      experimentalReactChildren: true
+    })
   ],
-  output: 'server',
+  output: 'static',
   adapter: cloudflare({
-    platformProxy: {
-      enabled: true
-    }
+    // Use static mode for better edge compatibility
+    mode: 'directory'
   }),
+  build: {
+    // Ensure proper asset handling for static deployment
+    assets: '_astro',
+    inlineStylesheets: 'auto'
+  },
   vite: {
     define: {
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
     },
-    resolve: {
-      alias: {
-        // Use our polyfill for react-dom/server.edge
-        'react-dom/server.edge': resolve(__dirname, 'src/polyfills/react-dom-server-edge.js'),
-        'react-dom/server$': 'react-dom/server'
+    build: {
+      // Target modern browsers for better edge compatibility
+      target: 'es2020',
+      rollupOptions: {
+        output: {
+          // Ensure proper chunking for edge environments
+          manualChunks: undefined
+        }
       }
-    },
-    ssr: {
-      // Don't try to externalize our polyfill
-      noExternal: ['react', 'react-dom']
-    },
-    optimizeDeps: {
-      // Exclude the problematic import from optimization
-      exclude: ['react-dom/server.edge']
     }
   }
 }); 
