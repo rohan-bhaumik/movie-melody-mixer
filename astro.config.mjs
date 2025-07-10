@@ -21,13 +21,21 @@ export default defineConfig({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
     },
     ssr: {
+      // Externalize react-dom/server.edge to prevent bundling issues
       external: ['react-dom/server.edge'],
+      // Keep React in the bundle for proper hydration
       noExternal: ['react', 'react-dom']
     },
     resolve: {
       alias: {
-        'react-dom/server.edge': 'react-dom/server'
+        // Map server.edge to regular server for React 18 compatibility
+        'react-dom/server.edge': 'react-dom/server',
+        'react-dom/server$': 'react-dom/server'
       }
+    },
+    optimizeDeps: {
+      // Exclude problematic dependencies from pre-bundling
+      exclude: ['react-dom/server.edge']
     }
   }
 }); 

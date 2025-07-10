@@ -4,6 +4,10 @@
     "buildCommand": "npm run build",
     "outputDirectory": "dist",
     "installCommand": "npm install",
-    "devCommand": "npm run dev"
+    "devCommand": "npm run dev",
+    "nodeVersion": "20.19.3",
+    "environmentVariables": {
+      "NODE_ENV": "production"
+    }
   }
 } 
