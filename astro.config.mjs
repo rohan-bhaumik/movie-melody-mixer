@@ -19,6 +19,15 @@ export default defineConfig({
   vite: {
     define: {
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+    },
+    ssr: {
+      external: ['react-dom/server.edge'],
+      noExternal: ['react', 'react-dom']
+    },
+    resolve: {
+      alias: {
+        'react-dom/server.edge': 'react-dom/server'
+      }
     }
   }
 }); 
