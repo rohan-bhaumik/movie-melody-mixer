@@ -1,10 +1,5 @@
 {
-  "cosmic": {
-    "framework": "nextjs",
-    "buildCommand": "npm run build",
-    "outputDirectory": "out",
-    "installCommand": "npm install",
-    "devCommand": "npm run dev",
-    "nodeVersion": "18"
-  }
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": "out"
 } 
