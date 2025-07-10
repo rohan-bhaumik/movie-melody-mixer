@@ -2,6 +2,11 @@ import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
 import react from '@astrojs/react';
 import cloudflare from '@astrojs/cloudflare';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Configuration for Webflow Cloud deployment on Cloudflare Edge runtime
 export default defineConfig({
@@ -20,21 +25,19 @@ export default defineConfig({
     define: {
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
     },
-    ssr: {
-      // Externalize react-dom/server.edge to prevent bundling issues
-      external: ['react-dom/server.edge'],
-      // Keep React in the bundle for proper hydration
-      noExternal: ['react', 'react-dom']
-    },
     resolve: {
       alias: {
-        // Map server.edge to regular server for React 18 compatibility
-        'react-dom/server.edge': 'react-dom/server',
+        // Use our polyfill for react-dom/server.edge
+        'react-dom/server.edge': resolve(__dirname, 'src/polyfills/react-dom-server-edge.js'),
         'react-dom/server$': 'react-dom/server'
       }
     },
+    ssr: {
+      // Don't try to externalize our polyfill
+      noExternal: ['react', 'react-dom']
+    },
     optimizeDeps: {
-      // Exclude problematic dependencies from pre-bundling
+      // Exclude the problematic import from optimization
       exclude: ['react-dom/server.edge']
     }
   }
